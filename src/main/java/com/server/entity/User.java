@@ -2,15 +2,17 @@ package com.server.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 @Entity
+@Table(name = "users")
 public class User {
 
     @Id
     private String id;
 
     private String username;
-    private String password; // 课程设计中可明文，答辩说明即可
+    private String password;
 
     public User() {}
 
@@ -23,4 +25,16 @@ public class User {
     public String getId() { return id; }
     public String getUsername() { return username; }
     public String getPassword() { return password; }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
 }

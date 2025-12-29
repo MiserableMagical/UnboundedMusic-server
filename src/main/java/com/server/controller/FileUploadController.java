@@ -24,6 +24,7 @@ public class FileUploadController {
 
     @PostMapping("/upload")
     public String upload(@RequestParam("file") MultipartFile file) throws IOException {
+        System.out.println("upload called");
 
         String id = String.valueOf(System.currentTimeMillis());
         File dir = new File(UPLOAD_DIR);
