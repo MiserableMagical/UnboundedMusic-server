@@ -24,11 +24,12 @@ public class PublicMusicController {
     }
 
     @PostMapping("/upload")
-    public void upload(
+    public ResponseEntity<String> upload(
             @RequestParam MultipartFile file,
             @AuthenticationPrincipal UserPrincipal user) {
 
-        cloudMusicService.upload(file, user.getId(), true);
+        String uuid = cloudMusicService.upload(file, user.getId(), true);
+        return ResponseEntity.ok(uuid);
     }
 
     @GetMapping("/list")

@@ -16,6 +16,10 @@
         <version>3.2.0</version>
     </parent>
 
+    <packaging>
+        jar
+    </packaging>
+
     <dependencies>
         <!-- Web 服务必备 -->
         <dependency>
@@ -41,4 +45,20 @@
         </dependency>
     </dependencies>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>3.2.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>

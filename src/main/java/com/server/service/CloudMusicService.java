@@ -45,7 +45,7 @@ public class CloudMusicService {
 
     /* ================= 上传 ================= */
 
-    public void upload(
+    public String upload(
             MultipartFile file,
             String userId,
             boolean isPublic
@@ -73,6 +73,8 @@ public class CloudMusicService {
             music.setUploadTime(LocalDateTime.now());
 
             musicRepository.save(music);
+
+            return id;
 
         } catch (IOException e) {
             throw new RuntimeException("Upload failed");
