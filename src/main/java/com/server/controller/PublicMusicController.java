@@ -1,14 +1,14 @@
 package com.server.controller;
 
 import com.server.entity.MusicFile;
+import com.server.entity.UserPrincipal;
 import com.server.service.CloudMusicService;
 import jakarta.annotation.Resource;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -21,6 +21,14 @@ public class PublicMusicController {
 
     public PublicMusicController(CloudMusicService cloudMusicService) {
         this.cloudMusicService = cloudMusicService;
+    }
+
+    @PostMapping("/upload")
+    public void upload(
+            @RequestParam MultipartFile file,
+            @AuthenticationPrincipal UserPrincipal user) {
+
+        cloudMusicService.upload(file, user.getId(), true);
     }
 
     @GetMapping("/list")
