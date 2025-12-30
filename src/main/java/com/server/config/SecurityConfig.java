@@ -18,18 +18,13 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http
-                // 先关 CSRF（前后端分离必关）
                 .csrf(AbstractHttpConfigurer::disable)
-
                 // 授权规则
                 .authorizeHttpRequests(auth -> auth
-                        // ✅ 放行登录 & 注册
                         .requestMatchers("/login", "/register").permitAll()
 
-                        // （可选）放行 H2 控制台
                         .requestMatchers("/h2/**").permitAll()
 
-                        // 其他接口必须登录
                         .anyRequest().authenticated()
                 )
 

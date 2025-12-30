@@ -83,10 +83,8 @@ public class CloudMusicService {
 
     /* ================= 下载 ================= */
 
-    public ResponseEntity<InputStreamResource> download(
-            String musicId,
-            String currentUserId
-    ) {
+    public File getFile(String musicId, String currentUserId)
+    {
         MusicFile music = musicRepository.findById(musicId)
                 .orElseThrow(() -> new RuntimeException("Music not found"));
 
@@ -100,10 +98,16 @@ public class CloudMusicService {
         if (!file.exists()) {
             throw new RuntimeException("File missing on server");
         }
+        return file;
+    }
 
+    /*public ResponseEntity<InputStreamResource> download(
+            String musicId,
+            String currentUserId
+    ) {
         return DownloadUtils.buildDownloadResponse(
                 file,
                 music.getFilename()
         );
-    }
+    }*/
 }

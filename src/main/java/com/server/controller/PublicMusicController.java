@@ -10,9 +10,11 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
-import static com.server.util.DownloadUtils.buildDownloadResponse;
+import static com.server.util.DownloadUtils.buildRangeResponse;
 
 @RestController
 @RequestMapping("/music/public")
@@ -38,7 +40,12 @@ public class PublicMusicController {
     }
 
     @GetMapping("/download/{id}")
-    public ResponseEntity<InputStreamResource> download(@PathVariable String id) {
-        return cloudMusicService.download(id, null);
+    public ResponseEntity<InputStreamResource> download(
+            @PathVariable String id,
+            @RequestHeader(value = "Range", required = false) String rangeHeader
+    ) throws IOException {
+
+        File file = cloudMusicService.getFile(id, null);
+        return buildRangeResponse(file, rangeHeader);
     }
 }

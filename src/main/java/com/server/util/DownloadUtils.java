@@ -1,49 +1,71 @@
 package com.server.util;
 
+import jakarta.annotation.Resource;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
 public class DownloadUtils {
 
-    public static ResponseEntity<InputStreamResource> buildDownloadResponse(
+    public static ResponseEntity<InputStreamResource> buildRangeResponse(
             File file,
-            String downloadName
-    ) {
+            String rangeHeader
+    ) throws IOException {
 
-        try {
-            String encodedFilename = URLEncoder.encode(downloadName, StandardCharsets.UTF_8)
-                    .replaceAll("\\+", "%20");
+        long fileLength = file.length();
 
-            /*HttpHeaders headers = new HttpHeaders();
-            headers.add(
-                    HttpHeaders.CONTENT_DISPOSITION,
-                    "attachment; filename*=UTF-8''" + encodedFilename
-            );
-
-            headers.setContentType(MediaType.parseMediaType(contentType));
-            headers.setContentLength(file.length());*/
-
-            InputStreamResource resource =
-                    new InputStreamResource(new FileInputStream(file));
-
+        // 没有 Range → 返回完整文件
+        if (rangeHeader == null) {
             return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION,
-                            "attachment; filename*=UTF-8''" + encodedFilename)
-                    .contentLength(file.length())
-                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                    .body(resource);
-
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException("File not found");
+                    .header(HttpHeaders.ACCEPT_RANGES, "bytes")
+                    .contentLength(fileLength)
+                    .body(new InputStreamResource(new FileInputStream(file)));
         }
+
+        // Range: bytes=start-end
+        String[] ranges = rangeHeader.replace("bytes=", "").split("-");
+        long start = Long.parseLong(ranges[0]);
+        long end = ranges.length > 1 && !ranges[1].isEmpty()
+                ? Long.parseLong(ranges[1])
+                : fileLength - 1;
+
+        if (end >= fileLength) {
+            end = fileLength - 1;
+        }
+
+        final long[] contentLength = {end - start + 1};
+
+        RandomAccessFile raf = new RandomAccessFile(file, "r");
+        raf.seek(start);
+
+        InputStream inputStream = new InputStream() {
+            @Override
+            public int read() throws IOException {
+                if (contentLength[0] <= 0) return -1;
+                contentLength[0]--;
+                return raf.read();
+            }
+
+            @Override
+            public void close() throws IOException {
+                raf.close();
+            }
+        };
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CONTENT_RANGE,
+                "bytes " + start + "-" + end + "/" + fileLength);
+        headers.add(HttpHeaders.ACCEPT_RANGES, "bytes");
+        headers.setContentLength(end - start + 1);
+
+        return ResponseEntity.status(HttpStatus.PARTIAL_CONTENT)
+                .headers(headers)
+                .body(new InputStreamResource(inputStream));
     }
 }
