@@ -1,9 +1,10 @@
 package com.server.controller;
 
+import com.server.dto.AuthRequest;
 import com.server.service.AuthService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -16,12 +17,9 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(
-            @RequestParam String username,
-            @RequestParam String password) {
-
+    public ResponseEntity<String> login(@RequestBody AuthRequest authRequest) {
         try {
-            String token = authService.login(username, password);
+            String token = authService.login(authRequest.getUsername(), authRequest.getPassword());
             return ResponseEntity.ok(token);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(401).body(e.getMessage());
@@ -29,12 +27,8 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public String register(
-            @RequestParam String username,
-            @RequestParam String password
-    ) {
-        authService.register(username, password);
-        return "Register success";
+    public ResponseEntity<String> register(@RequestBody AuthRequest authRequest) {
+        authService.register(authRequest.getUsername(), authRequest.getPassword());
+        return ResponseEntity.ok("Register success");
     }
-
 }
