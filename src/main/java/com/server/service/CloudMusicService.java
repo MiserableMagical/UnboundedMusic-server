@@ -5,6 +5,7 @@ import com.server.exception.BusinessException;
 import com.server.repository.MusicRepository;
 import com.server.util.DownloadUtils;
 import jakarta.annotation.Resource;
+import jakarta.transaction.Transactional;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -86,7 +87,7 @@ public class CloudMusicService {
     public File getFile(String musicId, String currentUserId)
     {
         MusicFile music = musicRepository.findById(musicId)
-                .orElseThrow(() -> new RuntimeException("Music not found"));
+                .orElseThrow(() -> new BusinessException(404, "Music Not Found"));
 
         // 🔐 权限判断
         if (!music.isPublic()
@@ -110,4 +111,31 @@ public class CloudMusicService {
                 music.getFilename()
         );
     }*/
+    @Transactional
+    public void deleteMusic(String musicId, String userId) {
+
+        MusicFile music = musicRepository.findById(musicId)
+                .orElseThrow(() -> new RuntimeException("Music not found"));
+
+        // 1️⃣ 权限校验
+        if (!music.isPublic()) {
+            if (!music.getOwnerId().equals(userId)) {
+                throw new RuntimeException("No permission to delete this file");
+            }
+        } else {
+            // 公共音乐（如果你暂时没管理员系统）
+            throw new RuntimeException("Public music cannot be deleted");
+        }
+
+        // 2️⃣ 删除物理文件
+        Path path = Paths.get(music.getStoragePath());
+        try {
+            Files.deleteIfExists(path);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to delete file", e);
+        }
+
+        // 3️⃣ 删除数据库记录
+        musicRepository.delete(music);
+    }
 }
