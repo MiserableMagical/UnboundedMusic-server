@@ -33,14 +33,15 @@ public class AuthService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        // ✅ 正确的密码校验方式
+        //密码校验
         if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new IllegalArgumentException("Wrong password");
         }
 
-        String token = UUID.randomUUID().toString();
-        tokenStore.put(token, user.getId());
-        return token;
+        //String token = UUID.randomUUID().toString();
+        //tokenStore.put(token, user.getId());
+        String uuid = user.getId();
+        return uuid;
     }
 
     public void register(String username, String password) {
