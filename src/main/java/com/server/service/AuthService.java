@@ -44,7 +44,7 @@ public class AuthService {
         return uuid;
     }
 
-    public void register(String username, String password) {
+    public String register(String username, String password) {
 
         if (username == null || username.isBlank()) {
             throw new BusinessException(400, "Username cannot be empty");
@@ -64,6 +64,8 @@ public class AuthService {
         user.setPassword(passwordEncoder.encode(password));
 
         userRepository.save(user);
+
+        return user.getId();
     }
 
     public String getUserIdByToken(String token) {
